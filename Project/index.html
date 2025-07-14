@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historical Monuments of India</title>
+    <meta name="description" content="Explore India's magnificent historical monuments with interactive maps, stunning visuals, and rich cultural heritage">
+    <meta name="keywords" content="India monuments, historical sites, Taj Mahal, Red Fort, tourism, heritage">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --primary-dark: #8B4513;
+            --accent-orange: #FF6B35;
+            --text-dark: #2C3E50;
+            --background-light: #FFF8F0;
+            --gradient-sunset: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFD700 100%);
+            --gradient-royal: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23FF6B35;stop-opacity:1" /><stop offset="50%" style="stop-color:%23F7931E;stop-opacity:1" /><stop offset="100%" style="stop-color:%23FFD700;stop-opacity:1" /></linearGradient></defs><rect width="100%" height="100%" fill="url(%23bg)"/><path d="M0,400 Q300,200 600,400 T1200,400 L1200,800 L0,800 Z" fill="white" opacity="0.1"/></svg>');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .hero-cta {
+            background: var(--gradient-sunset);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+        }
+
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-dark) !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-dark) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-orange) !important;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--primary-dark);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient-sunset);
+            border-radius: 2px;
+        }
+
+        .monument-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .monument-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px六十px rgba(0,0,0,0.15);
+        }
+
+        .monument-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .monument-card:hover .monument-image {
+            transform: scale(1.1);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .monument-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .monument-location {
+            color: var(--accent-orange);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .monument-description {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .monument-year {
+            background: var(--gradient-sunset);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .btn-explore {
+            background: var(--gradient-royal);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-explore:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .stats-section {
+            background: var(--gradient-sunset);
+            color: white;
+            padding: 4rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-gold);
+        }
+
+        .social-icons {
+            margin-top: 1rem;
+        }
+
+        .social-icons a {
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            transition: color 0.3s ease;
+        }
+
+       
+
+        .social-icons a:hover {
+            color: var(--primary-gold);
+        }
+
+        .search-bar {
+            max-width: 600px;
+            margin: 2rem auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-orange);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            bottom: 5px;
+            width: 40px;
+            background: varಸ್ವಾರದ: var(--gradient-sunset);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-tab {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-tab.active,
+        .filter-tab:hover {
+            background: var(--gradient-sunset);
+            color: white;
+            border-color: transparent;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: var(--accent-orange);
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+
+        #map {
+            height: 400px;
+            border-radius: 10px;
+        }
+
+        .scroll-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--gradient-sunset);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: none;
+        }
+
+        .scroll-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .monument-card {
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#home">
+                <i class="fas fa-landmark"></i> Heritage India
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#monuments">Monuments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#map">Map</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Heritage India</h1>
+            <p class="hero-subtitle">Discover the magnificent historical monuments that tell the story of India's rich cultural heritage</p>
+            <button class="hero-cta" onclick="scrollToSection('monuments')">
+                Explore Monuments <i class="fas fa-arrow-down ms-2"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- Monuments Section -->
+    <section id="monuments" class="py-5">
+        <div class="container">
+            <h2 class="section-title">Historical Monuments</h2>
+            
+            <!-- Search Bar -->
+            <div class="search-bar">
+                <input type="text" class="search-input" id="searchInput" placeholder="Search monuments...">
+                <button class="search-btn" onclick="searchMonuments()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+                <div class="filter-tab active" onclick="filterMonuments('all')">All</div>
+                <div class="filter-tab" onclick="filterMonuments('tomb')">Tombs</div>
+                <div class="filter-tab" onclick="filterMonuments('fort')">Forts</div>
+                <div class="filter-tab" onclick="filterMonuments('temple')">Temples</div>
+                <div class="filter-tab" onclick="filterMonuments('palace')">Palaces</div>
+            </div>
+
+            <!-- Monuments Grid -->
+            <div class="row" id="monumentsGrid">
+                <div class="loading">Loading monuments...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map" class="py-5">
+        <div class="container">
+            <h2 class="section-title">Explore on Map</h2>
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number">15+</span>
+                        <span class="stat-label">Historical Monuments</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number">5000+</span>
+                        <span class="stat-label">Years of History</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number">12</span>
+                        <span class="stat-label">UNESCO Sites</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <span class="stat-number">28</span>
+                        <span class="stat-label">States Covered</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title">About Heritage India</h2>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <p class="lead text-center">
+                        India's historical monuments stand as testaments to the country's rich cultural heritage, architectural brilliance, and artistic excellence. From the iconic Taj Mahal to the mighty Red Fort, each monument tells a unique story of India's glorious past.
+                    </p>
+                    <p class="text-center">
+                        Our platform brings together comprehensive information about India's most significant historical monuments, complete with detailed descriptions, historical context, and interactive features to enhance your learning experience.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="footer-brand">Heritage India</div>
+                    <p>Preserving and promoting India's rich cultural heritage through digital innovation.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#monuments">Monuments</a></li>
+                        <li><a href="#map">Map</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Info</h5>
+                    <p><i class="fas fa-envelope"></i> info@heritageindia.com</p>
+                    <p><i class="fas fa-phone"></i> +91 98765 XXXXX</p>
+                    <p><i class="fas fa-map-marker-alt"></i> New Delhi, India</p>
+                </div>
+            </div>
+            <hr class="mt-4">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p>© 2023 Heritage India. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scroll to Top Button -->
+    <button class="scroll-top" id="scrollTopBtn" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Monument data with coordinates
+        const monuments = [
+            {
+                id: 1,
+                name: "Taj Mahal",
+                location: "Agra, Uttar Pradesh",
+                year: "1653",
+                type: "tomb",
+                description: "An ivory-white marble mausoleum, built by Mughal emperor Shah Jahan in memory of his wife Mumtaz Mahal. A UNESCO World Heritage Site and one of the New Seven Wonders of the World.",
+                image: "taj mahal.jpeg",
+                lat: 27.1751,
+                lng: 78.0421
+            },
+            {
+                id: 2,
+                name: "Red Fort",
+                location: "Delhi",
+                year: "1648",
+                type: "fort",
+                description: "A historic walled city in Delhi, built by Mughal Emperor Shah Jahan. The main residence of the Mughal emperors for nearly 200 years.",
+                image: "red fort.jpeg",
+                lat: 28.6562,
+                lng: 77.2410
+            },
+            {
+                id: 3,
+                name: "Qutub Minar",
+                location: "Delhi",
+                year: "1199",
+                type: "tower",
+                description: "A minaret and victory tower that forms part of the Qutb complex. Built by Qutb-ud-Din Aibak, it's a UNESCO World Heritage Site.",
+                image: "qutub minar.jpeg",
+                lat: 28.5245,
+                lng: 77.1853
+            },
+            {
+                id: 4,
+                name: "Hawa Mahal",
+                location: "Jaipur, Rajasthan",
+                year: "1799",
+                type: "palace",
+                description: "Palace of Winds, built by Maharaja Sawai Pratap Singh. Known for its unique five-story exterior resembling a honeycomb.",
+                image: "hawa mahal.jpeg",
+                lat: 26.9239,
+                lng: 75.8267
+            },
+            {
+                id: 5,
+                name: "Fatehpur Sikri",
+                location: "Uttar Pradesh",
+                year: "1571",
+                type: "fort",
+                description: "A city built by Mughal Emperor Akbar. Served as the capital of the Mughal Empire from 1571 to 1585.",
+                image: "fathepur.jpeg",
+                lat: 27.0910,
+                lng: 77.6640
+            },
+            {
+                id: 6,
+                name: "Gateway of India",
+                location: "Mumbai, Maharashtra",
+                year: "1924",
+                type: "monument",
+                description: "An arch-monument built to commemorate the landing of King George V and Queen Mary at Apollo Bunder in 1911.",
+                image: "gateway.jpeg",
+                lat: 18.9218,
+                lng: 72.8347
+            },
+            {
+                id: 7,
+                name: "Charminar",
+                location: "Hyderabad, Telangana",
+                year: "1591",
+                type: "monument",
+                description: "A monument and mosque built by Sultan Muhammad Quli Qutb Shah. The structure is a symbol of Hyderabad.",
+                image: "charminar.jpeg",
+                lat: 17.3850,
+                lng: 78.4867
+            },
+            {
+                id: 8,
+                name: "Mysore Palace",
+                location: "Mysore, Karnataka",
+                year: "1912",
+                type: "palace",
+                description: "A historical palace and royal residence, also known as the Amba Vilas Palace. It's the official residence of the Wadiyar dynasty.",
+                image: "mysore.jpeg",
+                lat: 12.2953,
+                lng: 76.6890
+            },
+            {
+                id: 9,
+                name: "Konark Sun Temple",
+                location: "Konark, Odisha",
+                year: "1250",
+                type: "temple",
+                description: "A 13th-century CE Hindu Sun temple dedicated to Surya, the Hindu Sun god. It's a UNESCO World Heritage Site.",
+                image: "konarak.jpeg",
+                lat: 19.8575,
+                lng: 85.8075
+            },
+            {
+                id: 10,
+                name: "Amber Fort",
+                location: "Jaipur, Rajasthan",
+                year: "1592",
+                type: "fort",
+                description: "A fort located in Amer, built by Raja Man Singh I. Known for its artistic elements and blend of Hindu and Mughal architecture.",
+                image: "amer.jpeg",
+                lat: 26.9857,
+                lng: 75.8706
+            },
+            {
+                id: 11,
+                name: "Khajuraho Temples",
+                location: "Khajuraho, Madhya Pradesh",
+                year: "950",
+                type: "temple",
+                description: "A group of Hindu and Jain temples famous for their Nagara-style architectural symbolism and erotic sculptures.",
+                image: "khj.jpeg",
+                lat: 25.2780,
+                lng: 80.2032
+            },
+            {
+                id: 12,
+                name: "Meenakshi Temple",
+                location: "Madurai, Tamil Nadu",
+                year: "1623",
+                type: "temple",
+                description: "A historic Hindu temple dedicated to Meenakshi and Sundareshwar. Famous for its stunning Dravidian architecture.",
+                image: "teample.jpeg",
+                lat: 9.9280,
+                lng: 78.1295
+            },
+            {
+                id: 13,
+                name: "Victoria Memorial",
+                location: "Kolkata, West Bengal",
+                year: "1921",
+                type: "monument",
+                description: "A large marble building built between 1906 and 1921 to commemorate Queen Victoria's 25 years reign in India.",
+                image: "victoria.jpeg",
+                lat: 22.5726,
+                lng: 88.4052
+            },
+            {
+                id: 14,
+                name: "Gol Gumbaz",
+                location: "Bijapur, Karnataka",
+                year: "1656",
+                type: "tomb",
+                description: "The tomb of Mohammed Adil Shah, famous for its massive dome and whispering gallery effect.",
+                image: "Gol Gumbaz.jpeg",
+                lat: 16.7996,
+                lng: 75.7575
+            },
+            {
+                id: 15,
+                name: "Sanchi Stupa",
+                location: "Sanchi, Madhya Pradesh",
+                year: "283 BCE",
+                type: "stupa",
+                description: "Buddhist complex built by Emperor Ashoka in the 3rd century BCE. It's one of the oldest stone structures in India.",
+                image: "Sanchi Stupa.jpeg",
+                lat: 23.8572,
+                lng: 78.2626
+            }
+        ];
+
+        let filteredMonuments = [...monuments];
+        let currentFilter = 'all';
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                loadMonuments();
+                initMap();
+            }, 1000);
+            
+            // Scroll effects
+            window.addEventListener('scroll', handleScroll);
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', searchMonuments);
+        });
+
+        // Initialize map
+        function initMap() {
+            const map = L.map('map').setView([20.5937, 78.9629], 5);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            monuments.forEach(monument => {
+                L.marker([monument.lat, monument.lng])
+                    .addTo(map)
+                    .bindPopup(`
+                        <h5>${monument.name}</h5>
+                        <p>${monument.location}</p>
+                        <p>${monument.description}</p>
+                    `);
+            });
+        }
+
+        function loadMonuments() {
+            const grid = document.getElementById('monumentsGrid');
+            grid.innerHTML = '';
+            
+            filteredMonuments.forEach((monument, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-lg-4 col-md-6 fade-in';
+                col.style.animationDelay = `${index * 0.1}s`;
+                
+                col.innerHTML = `
+                    <div class="monument-card" data-type="${monument.type}">
+                        <img src="${monument.image}" alt="${monument.name}" class="monument-image" loading="lazy">
+                        <div class="card-body">
+                            <h5 class="monument-title">${monument.name}</h5>
+                            <p class="monument-location"><i class="fas fa-map-marker-alt"></i> ${monument.location}</p>
+                            <span class="monument-year">${monument.year}</span>
+                            <p class="monument-description">${monument.description}</p>
+                            <a href="#" class="btn-explore" onclick="exploreMonument(${monument.id})">
+                                <i class="fas fa-eye"></i> Explore
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                grid.appendChild(col);
+            });
+        }
+
+        function filterMonuments(type) {
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            currentFilter = type;
+            
+            if (type === 'all') {
+                filteredMonuments = [...monuments];
+            } else {
+                filteredMonuments = monuments.filter(monument => monument.type === type);
+            }
+            
+            loadMonuments();
+        }
+
+        function searchMonuments() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                if (currentFilter === 'all') {
+                    filteredMonuments = [...monuments];
+                } else {
+                    filteredMonuments = monuments.filter(monument => monument.type === currentFilter);
+                }
+            } else {
+                let baseList = currentFilter === 'all' ? monuments : monuments.filter(monument => monument.type === currentFilter);
+                filteredMonuments = baseList.filter(monument => 
+                    monument.name.toLowerCase().includes(searchTerm) ||
+                    monument.location.toLowerCase().includes(searchTerm) ||
+                    monument.description.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            loadMonuments();
+        }
+
+        function exploreMonument(id) {
+            const monument = monuments.find(m => m.id === id);
+            if (monument) {
+                alert(`🏛️ ${monument.name}\n\n📍 Location: ${monument.location}\n🗓️ Built: ${monument.year}\n\n${monument.description}\n\nThis would typically open a detailed view with more images, historical information, and interactive features!`);
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+
+        function handleScroll() {
+            const scrollBtn = document.getElementById('scrollTopBtn');
+            if (window.pageYOffset > 300) {
+                scrollBtn.style.display = 'block';
+            } else {
+                scrollBtn.style.display = 'none';
+            }
+            
+            const navbar = document.querySelector('.navbar');
+            if (window.pageYOffset > 50) {
+                navbar.style.background = 'rgba(255,255,255,0.98)';
+            } else {
+                navbar.style.background = 'rgba(255,255,255,0.95)';
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-number');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent.replace('+', ''));
+                let current = 0;
+                const increment = target / 100;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target + (target > 1000 ? '+' : '');
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current) + (current > 1000 ? '+' : '');
+                    }
+                }, 20);
+            });
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    if (entry.target.classList.contains('stats-section')) {
+                        animateCounters();
+                    }
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const statsSection = document.querySelector('.stats-section');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
+        });
+    </script>
+</body>
+</html>
